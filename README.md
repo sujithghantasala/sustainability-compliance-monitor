@@ -183,6 +183,3 @@ Ready for demo and review.
 
 ---
 
-## Author
-
-Sujith
