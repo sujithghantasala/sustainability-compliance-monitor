@@ -14,16 +14,16 @@ def run_tuning():
         system_prompt = f.read().strip()
     
     inputs = [
-        "How can a textile company reduce its water footprint?",
-        "What are the key metrics for measuring social impact in a supply chain?",
-        "Explain the importance of governance in ESG reporting.",
-        "Is investing in coal power plants compliant with modern ESG standards?",
-        "What are the environmental impacts of lithium-ion battery production?",
-        "How should a company disclose its carbon emissions?",
-        "What is the difference between Scope 1, 2, and 3 emissions?",
-        "How does biodiversity loss affect corporate sustainability risks?",
-        "What are the labor rights risks in cobalt mining?",
-        "How can a business transition to a circular economy model?"
+        "Are data privacy breaches considered a material ESG risk for an e-commerce platform?",
+        "How should a cement manufacturer approach setting science-based targets for decarbonization?",
+        "Does a company with no board diversity face governance risks under the new SEC guidelines?",
+        "What are the social compliance requirements for sourcing palm oil from Indonesia?",
+        "Is greenwashing a significant risk when a company claims its plastics are 100% ocean-bound without third-party verification?",
+        "How does water scarcity in semiconductor manufacturing regions impact a company's ESG profile?",
+        "What are the implications of the Uyghur Forced Labor Prevention Act for solar panel supply chains?",
+        "How can a financial institution ensure its loan portfolio is aligned with the Paris Agreement?",
+        "What role does executive compensation tied to sustainability metrics play in corporate governance?",
+        "Can Scope 3 emissions be entirely excluded from an IT company's initial sustainability report?"
     ]
     
     print(f"Testing Prompt: {system_prompt}\n")

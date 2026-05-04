@@ -18,7 +18,9 @@ public class AiServiceClient {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     // IMPORTANT: match your Flask endpoint
-    private final String baseUrl = "http://127.0.0.1:5000/describe";
+    private final String baseUrl = System.getenv("AI_SERVICE_URL") != null 
+            ? System.getenv("AI_SERVICE_URL") 
+            : "http://127.0.0.1:5000/describe";
 
     public AiServiceClient() {
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
