@@ -16,13 +16,19 @@ function FormPage() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    // ✅ improved validation
     if (!form.companyName || !form.status) {
       alert("Company and status required");
       return;
     }
 
-    if (form.complianceScore && isNaN(form.complianceScore)) {
-      alert("Score must be number");
+    if (form.complianceScore !== "" && isNaN(form.complianceScore)) {
+      alert("Score must be a number");
+      return;
+    }
+
+    if (form.complianceScore < 0 || form.complianceScore > 100) {
+      alert("Score must be between 0 and 100");
       return;
     }
 
@@ -36,14 +42,14 @@ function FormPage() {
     API.post("/api/create", payload)
       .then(() => {
         alert("Saved!");
-        setForm({
-          companyName: "",
-          complianceScore: "",
-          status: "",
-          description: "",
-        });
+
+        // ✅ redirect instead of just clearing
+        window.location.href = "/list";
       })
-      .catch((err) => console.error(err));
+      .catch((err) => {
+        console.error(err);
+        alert("Create failed");
+      });
   };
 
   return (
@@ -52,33 +58,46 @@ function FormPage() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
 
-        <input name="companyName" placeholder="Company"
+        <input
+          name="companyName"
+          placeholder="Company"
           value={form.companyName}
           onChange={handleChange}
-          className="border p-2 w-full" />
+          className="border p-2 w-full"
+        />
 
-        <input type="number" name="complianceScore" placeholder="Score"
+        <input
+          type="number"
+          name="complianceScore"
+          placeholder="Score"
           value={form.complianceScore}
           onChange={handleChange}
-          className="border p-2 w-full" />
+          className="border p-2 w-full"
+        />
 
-        <select name="status"
+        <select
+          name="status"
           value={form.status}
           onChange={handleChange}
-          className="border p-2 w-full">
-
+          className="border p-2 w-full"
+        >
           <option value="">Select Status</option>
           <option value="COMPLIANT">Compliant</option>
           <option value="NON-COMPLIANT">Non-Compliant</option>
         </select>
 
-        <textarea name="description" placeholder="Description"
+        <textarea
+          name="description"
+          placeholder="Description"
           value={form.description}
           onChange={handleChange}
-          className="border p-2 w-full" />
+          className="border p-2 w-full"
+        />
 
-        <button type="submit"
-          className="bg-blue-500 text-white px-4 py-2">
+        <button
+          type="submit"
+          className="bg-blue-500 text-white px-4 py-2"
+        >
           Submit
         </button>
 

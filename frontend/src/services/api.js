@@ -4,7 +4,6 @@ const API = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8080",
 });
 
-// ✅ attach token to EVERY request
 API.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
 
@@ -14,5 +13,16 @@ API.interceptors.request.use((config) => {
 
   return config;
 });
+
+API.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    if (err.response?.status === 401 || err.response?.status === 403) {
+      localStorage.removeItem("token");
+      window.location.href = "/";
+    }
+    return Promise.reject(err);
+  }
+);
 
 export default API;

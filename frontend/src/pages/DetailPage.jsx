@@ -4,48 +4,73 @@ import API from "../services/api";
 
 function DetailPage() {
   const { id } = useParams();
-  const [data, setData] = useState(null);
 
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  const [aiData, setAiData] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
+
+  // Fetch record
   useEffect(() => {
     API.get(`/api/${id}`)
-      .then((res) => setData(res.data))
+      .then((res) => {
+        setData(res.data);
+        setLoading(false);
+      })
       .catch((err) => console.error(err));
   }, [id]);
 
-  if (!data) {
-    return <p className="p-6">Loading...</p>;
-  }
+  // AI call
+  const handleAI = async () => {
+    try {
+      setAiLoading(true);
+
+      const res = await API.post("/api/ai/recommend", {
+        companyName: data.companyName,
+        description: data.description,
+      });
+
+      // ✅ FIX: store string instead of array
+      setAiData(res.data.insight);
+
+    } catch (err) {
+      console.error(err);
+      alert("AI failed");
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  if (loading) return <p>Loading...</p>;
+  if (!data) return <p>No data</p>;
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Record Details</h1>
+      <h1 className="text-2xl font-bold">{data.companyName}</h1>
 
-      <div className="bg-white shadow p-4 rounded space-y-2">
+      <p>Score: {data.complianceScore}</p>
+      <p>Status: {data.status}</p>
+      <p>Description: {data.description}</p>
 
-        <p>
-          <strong>Company:</strong> {data.companyName}
-        </p>
-
-        <p>
-          <strong>Score:</strong> {data.complianceScore}
-        </p>
-
-        <p>
-          <strong>Status:</strong> {data.status}
-        </p>
-
-        <p>
-          <strong>Description:</strong> {data.description}
-        </p>
-
-      </div>
-
+      {/* BUTTON */}
       <button
-        onClick={() => window.history.back()}
-        className="mt-4 bg-gray-800 text-white px-3 py-2 rounded"
+        onClick={handleAI}
+        className="bg-purple-600 text-white px-4 py-2 mt-4"
       >
-        Back
+        Generate AI Insights
       </button>
+
+      {/* LOADING */}
+      {aiLoading && <p className="mt-4">Loading AI...</p>}
+
+      {/* RESULT */}
+      {aiData && (
+        <div className="mt-4 border p-4 bg-gray-100">
+          <h2 className="font-bold">AI Recommendation</h2>
+          <p>{aiData}</p>
+        </div>
+      )}
     </div>
   );
 }

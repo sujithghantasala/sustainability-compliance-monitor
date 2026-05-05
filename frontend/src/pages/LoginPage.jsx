@@ -1,70 +1,67 @@
 import { useState } from "react";
-import API from "../services/api";
+import axios from "axios";
 
 function LoginPage() {
-  const [form, setForm] = useState({
-    username: "",
-    password: "",
-  });
+  const [username, setUsername] = useState(""); // 🔥 rename for clarity
+  const [password, setPassword] = useState("");
 
-  const handleChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleLogin = async (e) => {
-    e.preventDefault();
-
+  const handleLogin = async () => {
     try {
-      const res = await API.post("/auth/login", {
-        username: form.username,
-        password: form.password,
+      console.log("Sending:", {
+        username: username.trim(),
+        password: password.trim(),
       });
+
+      const res = await axios.post(
+        "http://localhost:8080/api/auth/login",
+        {
+          username: username.trim(),   // ✅ MUST match backend
+          password: password.trim(),
+        }
+      );
+
+      console.log("LOGIN RESPONSE:", res.data);
+
+      if (!res.data.token) {
+        alert("No token received");
+        return;
+      }
 
       localStorage.setItem("token", res.data.token);
 
-      alert("Login successful!");
-      window.location.href = "/";
+      window.location.href = "/dashboard";
     } catch (err) {
-      console.error(err);
-      alert("Invalid credentials");
+      console.error("LOGIN ERROR:", err.response?.data || err);
+      alert("Login failed");
     }
   };
 
   return (
     <div className="p-6">
-      <h1 className="text-xl font-bold mb-4">Login</h1>
+      <h1 className="text-xl mb-4">Login</h1>
 
-      <form onSubmit={handleLogin} className="space-y-4">
+      <input
+        type="text"   // 🔥 changed from email → important
+        placeholder="Username"
+        className="border p-2 block mb-2"
+        value={username}
+        onChange={(e) => setUsername(e.target.value)}
+      />
 
-        {/* USERNAME */}
-        <input
-          name="username"                // ✅ IMPORTANT
-          placeholder="Username"
-          value={form.username}
-          onChange={handleChange}
-          className="border p-2 w-full"
-        />
+      <input
+        type="password"
+        placeholder="Password"
+        className="border p-2 block mb-2"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+      />
 
-        {/* PASSWORD */}
-        <input
-          type="password"
-          name="password"                // ✅ IMPORTANT
-          placeholder="Password"
-          value={form.password}
-          onChange={handleChange}
-          className="border p-2 w-full"
-        />
-
-        <button
-          type="submit"
-          className="bg-blue-500 text-white px-4 py-2"
-        >
-          Login
-        </button>
-      </form>
+      <button
+        onClick={handleLogin}
+        className="bg-blue-500 text-white px-4 py-2"
+      >
+        Login
+      </button>
     </div>
   );
 }

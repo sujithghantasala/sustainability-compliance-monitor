@@ -3,19 +3,30 @@ import API from "../services/api";
 
 function Dashboard() {
   const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+    const fetchStats = async () => {
+    try {
+      const res = await API.get("/api/stats"); // ✅ FIXED
+      setStats(res.data);
+    } catch (err) {
+      console.error("Error loading stats:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    API.get("/api/stats")
-      .then((res) => {
-        setStats(res.data);
-      })
-      .catch((err) => {
-        console.error("Error loading stats:", err);
-      });
+    fetchStats();
   }, []);
 
-  if (!stats) {
+
+  if (loading) {
     return <p className="p-6">Loading...</p>;
+  }
+
+  if (!stats) {
+    return <p className="p-6">No data available</p>;
   }
 
   return (
