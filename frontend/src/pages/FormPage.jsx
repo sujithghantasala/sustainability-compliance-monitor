@@ -16,7 +16,6 @@ function FormPage() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // ✅ improved validation
     if (!form.companyName || !form.status) {
       alert("Company and status required");
       return;
@@ -42,8 +41,6 @@ function FormPage() {
     API.post("/api/create", payload)
       .then(() => {
         alert("Saved!");
-
-        // ✅ redirect instead of just clearing
         window.location.href = "/list";
       })
       .catch((err) => {
@@ -53,56 +50,89 @@ function FormPage() {
   };
 
   return (
-    <div className="p-6">
-      <h1 className="text-xl font-bold mb-4">Create Record</h1>
+    <main className="app-page">
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">Create Record</h1>
+          <p className="page-subtitle">
+            Add a company compliance entry for tracking and AI review.
+          </p>
+        </div>
+      </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="panel max-w-3xl space-y-5">
+        <label className="block">
+          <span className="mb-1 block text-sm font-semibold text-slate-700">
+            Company
+          </span>
+          <input
+            name="companyName"
+            placeholder="Company name"
+            value={form.companyName}
+            onChange={handleChange}
+            className="form-control"
+          />
+        </label>
 
-        <input
-          name="companyName"
-          placeholder="Company"
-          value={form.companyName}
-          onChange={handleChange}
-          className="border p-2 w-full"
-        />
+        <div className="grid gap-5 sm:grid-cols-2">
+          <label className="block">
+            <span className="mb-1 block text-sm font-semibold text-slate-700">
+              Score
+            </span>
+            <input
+              type="number"
+              name="complianceScore"
+              placeholder="0 - 100"
+              value={form.complianceScore}
+              onChange={handleChange}
+              className="form-control"
+            />
+          </label>
 
-        <input
-          type="number"
-          name="complianceScore"
-          placeholder="Score"
-          value={form.complianceScore}
-          onChange={handleChange}
-          className="border p-2 w-full"
-        />
+          <label className="block">
+            <span className="mb-1 block text-sm font-semibold text-slate-700">
+              Status
+            </span>
+            <select
+              name="status"
+              value={form.status}
+              onChange={handleChange}
+              className="form-control"
+            >
+              <option value="">Select Status</option>
+              <option value="COMPLIANT">Compliant</option>
+              <option value="NON-COMPLIANT">Non-Compliant</option>
+            </select>
+          </label>
+        </div>
 
-        <select
-          name="status"
-          value={form.status}
-          onChange={handleChange}
-          className="border p-2 w-full"
-        >
-          <option value="">Select Status</option>
-          <option value="COMPLIANT">Compliant</option>
-          <option value="NON-COMPLIANT">Non-Compliant</option>
-        </select>
+        <label className="block">
+          <span className="mb-1 block text-sm font-semibold text-slate-700">
+            Description
+          </span>
+          <textarea
+            name="description"
+            placeholder="Describe sustainability practices, risks, or audit notes"
+            value={form.description}
+            onChange={handleChange}
+            className="form-control min-h-32"
+          />
+        </label>
 
-        <textarea
-          name="description"
-          placeholder="Description"
-          value={form.description}
-          onChange={handleChange}
-          className="border p-2 w-full"
-        />
-
-        <button
-          type="submit"
-          className="bg-blue-500 text-white px-4 py-2"
-        >
-          Submit
-        </button>
-
+        <div className="flex flex-wrap gap-3">
+          <button type="submit" className="btn-accent">
+            Submit
+          </button>
+          <button
+            type="button"
+            onClick={() => (window.location.href = "/list")}
+            className="btn-muted"
+          >
+            Cancel
+          </button>
+        </div>
       </form>
-    </div>
+    </main>
   );
 }
 

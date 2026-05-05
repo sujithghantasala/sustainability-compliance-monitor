@@ -23,8 +23,6 @@ export default function ListPage() {
     fetchData();
   }, []);
 
-  
-
   const handleSearch = async () => {
     try {
       const res = await API.get(`/api/search?q=${query}`);
@@ -51,69 +49,123 @@ export default function ListPage() {
     }
   };
 
-  const filterCompliant = async () => {
-    const res = await API.get("/api/status/COMPLIANT");
+  const filterByStatus = async (status) => {
+    const res = await API.get(`/api/status/${status}`);
     setData(res.data);
   };
 
-  const filterNonCompliant = async () => {
-    const res = await API.get("/api/status/NON-COMPLIANT");
-    setData(res.data);
-  };
+  const statusClass = (status) =>
+    status === "COMPLIANT"
+      ? "bg-emerald-50 text-emerald-700"
+      : "bg-rose-50 text-rose-700";
 
-  if (loading) return <div className="p-4">Loading...</div>;
+  if (loading) return <div className="app-page">Loading records...</div>;
 
   return (
-    <div className="p-4">
-      <h2 className="text-xl mb-4">Compliance List</h2>
-
-      {/* SEARCH */}
-      <div className="mb-4 flex gap-2">
-        <input
-          type="text"
-          placeholder="Search company..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          className="border p-2"
-        />
-        <button onClick={handleSearch} className="bg-blue-500 text-white px-3">
-          Search
-        </button>
-        <button onClick={fetchData} className="bg-gray-500 text-white px-3">
-          Reset
+    <main className="app-page">
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">Compliance Records</h1>
+          <p className="page-subtitle">
+            Search, filter, edit, and open records for AI-assisted review.
+          </p>
+        </div>
+        <button onClick={() => (window.location.href = "/add")} className="btn-accent">
+          Add Record
         </button>
       </div>
 
-      {/* FILTER */}
-      <div className="mb-4 flex gap-2">
-        <button onClick={filterCompliant} className="bg-green-500 text-white px-3 py-1 rounded">
-          Compliant
-        </button>
-        <button onClick={filterNonCompliant} className="bg-red-500 text-white px-3 py-1 rounded">
-          Non-Compliant
-        </button>
-        <button onClick={fetchData} className="bg-gray-500 text-white px-3 py-1 rounded">
-          Reset
-        </button>
-      </div>
+      <section className="panel mb-5">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-1 flex-col gap-2 sm:flex-row">
+            <input
+              type="text"
+              placeholder="Search company..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="form-control sm:max-w-sm"
+            />
+            <button onClick={handleSearch} className="btn-primary">
+              Search
+            </button>
+            <button onClick={fetchData} className="btn-muted">
+              Reset
+            </button>
+          </div>
 
-      {actionLoading && <p>Processing...</p>}
-
-      {data.length === 0 && <p>No records found</p>}
-
-      {data.map((item) => (
-        <div key={item.id} className="border p-3 mb-2 rounded">
-          <p><b>{item.companyName}</b></p>
-          <p>Status: {item.status}</p>
-          <p>Score: {item.complianceScore}</p>
-
-          <div className="mt-2 flex gap-2">
-            <button onClick={() => window.location.href = `/details/${item.id}`}>View</button>
-            <button onClick={() => window.location.href = `/edit/${item.id}`}>Edit</button>
-            <button onClick={() => handleDelete(item.id)}>Delete</button>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => filterByStatus("COMPLIANT")}
+              className="btn-muted"
+            >
+              Compliant
+            </button>
+            <button
+              onClick={() => filterByStatus("NON-COMPLIANT")}
+              className="btn-muted"
+            >
+              Non-Compliant
+            </button>
           </div>
         </div>
-      ))}
-    </div>
+      </section>
+
+      {actionLoading && <p className="mb-4 text-sm text-slate-600">Processing...</p>}
+
+      {data.length === 0 ? (
+        <div className="panel text-center text-slate-600">No records found.</div>
+      ) : (
+        <div className="grid gap-3">
+          {data.map((item) => (
+            <article key={item.id} className="panel">
+              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <h2 className="text-lg font-bold text-slate-950">
+                      {item.companyName}
+                    </h2>
+                    <span className={`status-pill ${statusClass(item.status)}`}>
+                      {item.status}
+                    </span>
+                  </div>
+                  <p className="mt-2 text-sm text-slate-600">
+                    Score:{" "}
+                    <span className="font-bold text-[#106EBE]">
+                      {item.complianceScore ?? 0}
+                    </span>
+                  </p>
+                  {item.description && (
+                    <p className="mt-1 line-clamp-2 text-sm text-slate-500">
+                      {item.description}
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => (window.location.href = `/details/${item.id}`)}
+                    className="btn-primary"
+                  >
+                    View
+                  </button>
+                  <button
+                    onClick={() => (window.location.href = `/edit/${item.id}`)}
+                    className="btn-muted"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(item.id)}
+                    className="btn-danger"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
+    </main>
   );
 }

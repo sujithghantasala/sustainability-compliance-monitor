@@ -2,25 +2,15 @@ import { useState } from "react";
 import axios from "axios";
 
 function LoginPage() {
-  const [username, setUsername] = useState(""); // 🔥 rename for clarity
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
   const handleLogin = async () => {
     try {
-      console.log("Sending:", {
+      const res = await axios.post("http://localhost:8080/api/auth/login", {
         username: username.trim(),
         password: password.trim(),
       });
-
-      const res = await axios.post(
-        "http://localhost:8080/api/auth/login",
-        {
-          username: username.trim(),   // ✅ MUST match backend
-          password: password.trim(),
-        }
-      );
-
-      console.log("LOGIN RESPONSE:", res.data);
 
       if (!res.data.token) {
         alert("No token received");
@@ -28,7 +18,6 @@ function LoginPage() {
       }
 
       localStorage.setItem("token", res.data.token);
-
       window.location.href = "/dashboard";
     } catch (err) {
       console.error("LOGIN ERROR:", err.response?.data || err);
@@ -37,31 +26,47 @@ function LoginPage() {
   };
 
   return (
-    <div className="p-6">
-      <h1 className="text-xl mb-4">Login</h1>
+    <div className="grid min-h-screen place-items-center bg-[#106EBE] px-4 py-10">
+      <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-2xl">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-slate-950">Sign in</h1>
+          <p className="mt-2 text-sm text-slate-600">
+            Access the sustainability compliance dashboard.
+          </p>
+        </div>
 
-      <input
-        type="text"   // 🔥 changed from email → important
-        placeholder="Username"
-        className="border p-2 block mb-2"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-      />
+        <div className="space-y-4">
+          <label className="block">
+            <span className="mb-1 block text-sm font-semibold text-slate-700">
+              Username
+            </span>
+            <input
+              type="text"
+              placeholder="Enter username"
+              className="form-control"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
+          </label>
 
-      <input
-        type="password"
-        placeholder="Password"
-        className="border p-2 block mb-2"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
+          <label className="block">
+            <span className="mb-1 block text-sm font-semibold text-slate-700">
+              Password
+            </span>
+            <input
+              type="password"
+              placeholder="Enter password"
+              className="form-control"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </label>
 
-      <button
-        onClick={handleLogin}
-        className="bg-blue-500 text-white px-4 py-2"
-      >
-        Login
-      </button>
+          <button onClick={handleLogin} className="btn-accent w-full">
+            Login
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

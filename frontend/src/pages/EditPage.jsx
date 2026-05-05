@@ -9,7 +9,7 @@ export default function EditPage() {
     companyName: "",
     complianceScore: "",
     status: "",
-    description: ""
+    description: "",
   });
 
   const fetchData = async () => {
@@ -26,17 +26,14 @@ export default function EditPage() {
     fetchData();
   }, []);
 
-  
-
   const handleChange = (e) => {
     setForm({
       ...form,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
   const handleUpdate = async () => {
-    // ✅ validation
     if (!form.companyName || !form.status) {
       alert("Company and status required");
       return;
@@ -69,47 +66,84 @@ export default function EditPage() {
   };
 
   return (
-    <div className="p-6">
-      <h2 className="text-xl mb-4">Edit Record</h2>
+    <main className="app-page">
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">Edit Record</h1>
+          <p className="page-subtitle">
+            Update compliance status, scoring, and audit context.
+          </p>
+        </div>
+      </div>
 
-      <input
-        name="companyName"
-        value={form.companyName}
-        onChange={handleChange}
-        className="border p-2 mb-2 block w-full"
-      />
+      <section className="panel max-w-3xl space-y-5">
+        <label className="block">
+          <span className="mb-1 block text-sm font-semibold text-slate-700">
+            Company
+          </span>
+          <input
+            name="companyName"
+            value={form.companyName}
+            onChange={handleChange}
+            className="form-control"
+          />
+        </label>
 
-      <input
-        name="complianceScore"
-        value={form.complianceScore}
-        onChange={handleChange}
-        className="border p-2 mb-2 block w-full"
-      />
+        <div className="grid gap-5 sm:grid-cols-2">
+          <label className="block">
+            <span className="mb-1 block text-sm font-semibold text-slate-700">
+              Score
+            </span>
+            <input
+              name="complianceScore"
+              type="number"
+              value={form.complianceScore || ""}
+              onChange={handleChange}
+              className="form-control"
+            />
+          </label>
 
-      <select
-        name="status"
-        value={form.status}
-        onChange={handleChange}
-        className="border p-2 mb-2 block w-full"
-      >
-        <option value="">Select Status</option>
-        <option value="COMPLIANT">Compliant</option>
-        <option value="NON-COMPLIANT">Non-Compliant</option>
-      </select>
+          <label className="block">
+            <span className="mb-1 block text-sm font-semibold text-slate-700">
+              Status
+            </span>
+            <select
+              name="status"
+              value={form.status}
+              onChange={handleChange}
+              className="form-control"
+            >
+              <option value="">Select Status</option>
+              <option value="COMPLIANT">Compliant</option>
+              <option value="NON-COMPLIANT">Non-Compliant</option>
+            </select>
+          </label>
+        </div>
 
-      <textarea
-        name="description"
-        value={form.description}
-        onChange={handleChange}
-        className="border p-2 mb-2 block w-full"
-      />
+        <label className="block">
+          <span className="mb-1 block text-sm font-semibold text-slate-700">
+            Description
+          </span>
+          <textarea
+            name="description"
+            value={form.description || ""}
+            onChange={handleChange}
+            className="form-control min-h-32"
+          />
+        </label>
 
-      <button
-        onClick={handleUpdate}
-        className="bg-green-500 text-white px-4 py-2"
-      >
-        Update
-      </button>
-    </div>
+        <div className="flex flex-wrap gap-3">
+          <button onClick={handleUpdate} className="btn-accent">
+            Update
+          </button>
+          <button
+            onClick={() => (window.location.href = "/list")}
+            className="btn-muted"
+          >
+            Cancel
+          </button>
+        </div>
+      </section>
+    </main>
   );
 }
