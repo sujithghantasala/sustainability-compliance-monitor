@@ -16,8 +16,8 @@ function FormPage() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!form.companyName || !form.status) {
-      alert("Company and status required");
+    if (!form.companyName || !form.status || form.complianceScore === "") {
+      alert("Company, score, and status required");
       return;
     }
 
@@ -33,9 +33,7 @@ function FormPage() {
 
     const payload = {
       ...form,
-      complianceScore: form.complianceScore
-        ? Number(form.complianceScore)
-        : null,
+      complianceScore: Number(form.complianceScore),
     };
 
     API.post("/api/create", payload)
@@ -101,6 +99,7 @@ function FormPage() {
             >
               <option value="">Select Status</option>
               <option value="COMPLIANT">Compliant</option>
+              <option value="PENDING_REVIEW">Pending Review</option>
               <option value="NON-COMPLIANT">Non-Compliant</option>
             </select>
           </label>

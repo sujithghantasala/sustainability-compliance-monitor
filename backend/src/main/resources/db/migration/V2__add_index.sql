@@ -1,1 +1,0 @@
-CREATE INDEX idx_status ON compliance_record(status);

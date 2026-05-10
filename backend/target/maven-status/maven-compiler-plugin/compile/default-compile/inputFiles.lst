@@ -7,6 +7,7 @@ C:\Users\91636\sustainability-compliance-monitor\backend\src\main\java\com\inter
 C:\Users\91636\sustainability-compliance-monitor\backend\src\main\java\com\internship\tool\controller\AiController.java
 C:\Users\91636\sustainability-compliance-monitor\backend\src\main\java\com\internship\tool\controller\AuthController.java
 C:\Users\91636\sustainability-compliance-monitor\backend\src\main\java\com\internship\tool\controller\ComplianceController.java
+C:\Users\91636\sustainability-compliance-monitor\backend\src\main\java\com\internship\tool\controller\GlobalExceptionHandler.java
 C:\Users\91636\sustainability-compliance-monitor\backend\src\main\java\com\internship\tool\controller\StatsController.java
 C:\Users\91636\sustainability-compliance-monitor\backend\src\main\java\com\internship\tool\entity\ComplianceRecord.java
 C:\Users\91636\sustainability-compliance-monitor\backend\src\main\java\com\internship\tool\model\AuditLog.java

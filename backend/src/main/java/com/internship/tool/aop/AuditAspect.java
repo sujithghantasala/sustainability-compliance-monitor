@@ -1,13 +1,13 @@
 package com.internship.tool.aop;
 
+import com.internship.tool.entity.ComplianceRecord;
+import com.internship.tool.service.AuditService;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
-
-import com.internship.tool.entity.ComplianceRecord;
-import com.internship.tool.service.AuditService;
 
 @Aspect
 @Component
@@ -19,19 +19,12 @@ public class AuditAspect {
         this.auditService = auditService;
     }
 
-    private String getUsername() {
-        return SecurityContextHolder.getContext()
-                .getAuthentication()
-                .getName();
-    }
-
-    // 🔹 CREATE
     @AfterReturning(
-        pointcut = "execution(* com.internship.tool.controller.ComplianceController.create(..))",
-        returning = "result"
+            pointcut = "execution(* com.internship.tool.controller.ComplianceController.create(..))",
+            returning = "result"
     )
     public void logCreate(Object result) {
-        ComplianceRecord saved = (ComplianceRecord) result;
+        ComplianceRecord saved = extractRecord(result);
 
         auditService.log(
                 "CREATE",
@@ -42,10 +35,7 @@ public class AuditAspect {
         );
     }
 
-    // 🔹 UPDATE
-    @AfterReturning(
-        pointcut = "execution(* com.internship.tool.controller.ComplianceController.update(..))"
-    )
+    @AfterReturning(pointcut = "execution(* com.internship.tool.controller.ComplianceController.update(..))")
     public void logUpdate(JoinPoint joinPoint) {
         Long id = (Long) joinPoint.getArgs()[0];
 
@@ -58,10 +48,7 @@ public class AuditAspect {
         );
     }
 
-    // 🔹 DELETE
-    @AfterReturning(
-        pointcut = "execution(* com.internship.tool.controller.ComplianceController.delete(..))"
-    )
+    @AfterReturning(pointcut = "execution(* com.internship.tool.controller.ComplianceController.delete(..))")
     public void logDelete(JoinPoint joinPoint) {
         Long id = (Long) joinPoint.getArgs()[0];
 
@@ -70,7 +57,26 @@ public class AuditAspect {
                 "ComplianceRecord",
                 id,
                 getUsername(),
-                "Deleted record"
+                "Soft deleted record"
         );
+    }
+
+    private ComplianceRecord extractRecord(Object result) {
+        if (result instanceof org.springframework.http.ResponseEntity<?> response
+                && response.getBody() instanceof ComplianceRecord record) {
+            return record;
+        }
+
+        return (ComplianceRecord) result;
+    }
+
+    private String getUsername() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || authentication.getName() == null) {
+            return "system";
+        }
+
+        return authentication.getName();
     }
 }

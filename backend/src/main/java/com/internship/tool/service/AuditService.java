@@ -1,9 +1,8 @@
 package com.internship.tool.service;
 
-import org.springframework.stereotype.Service;
-
 import com.internship.tool.model.AuditLog;
 import com.internship.tool.repository.AuditLogRepository;
+import org.springframework.stereotype.Service;
 
 @Service
 public class AuditService {
@@ -15,9 +14,6 @@ public class AuditService {
     }
 
     public void log(String action, String entity, Long entityId, String username, String details) {
-
-        System.out.println("AUDIT SERVICE HIT");
-
         AuditLog log = new AuditLog();
         log.setAction(action);
         log.setEntity(entity);
@@ -25,11 +21,6 @@ public class AuditService {
         log.setUsername(username);
         log.setDetails(details);
 
-        try {
-            repo.save(log);
-            System.out.println("AUDIT SAVED");
-        } catch (Exception e) {
-            e.printStackTrace();   // 🔥 will show real error if any
-        }
+        repo.save(log);
     }
 }

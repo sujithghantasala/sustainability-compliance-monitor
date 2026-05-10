@@ -1,72 +1,53 @@
-# Final Security Report: Sustainability Compliance Monitor
+# SECURITY.md
 
-## 📋 Executive Summary
-The Sustainability Compliance Monitor has undergone a comprehensive multi-phase security audit and hardening process. As of Day 12, the application maintains a robust security posture, implementing industry-standard defenses for both traditional web vulnerabilities and AI-specific threats. The stack is fully containerized with segregated networks, enforced rate limiting, and multi-layer prompt injection defenses. All critical and high-severity findings identified during automated (OWASP ZAP) and manual testing have been remediated.
+## Security Overview
 
----
+The Sustainability Compliance Monitor protects compliance records with JWT authentication, server-side validation, soft deletes, audit logging, and controlled file handling. This document records the final Java Developer 2 security review for the database, backend API, React frontend, and demo-facing security behaviors.
 
-## 🛡️ Comprehensive Threat Model
-We have identified and mitigated the following primary threats to the system:
+## Threats Reviewed
 
-1.  **Prompt Injection (AI-Specific)**: Malicious actors attempting to override system instructions to extract sensitive data or generate non-compliant content.
-2.  **API Key & Secret Exposure**: Risk of `GROQ_API_KEY` or JWT secrets being leaked via logs, source control, or client-side exposure.
-3.  **Denial of Service (DoS)**: Resource exhaustion through high-frequency API calls, leading to service downtime and cost spikes.
-4.  **Sensitive Data (PII) Exposure**: Inadvertent processing or logging of Personally Identifiable Information through AI analysis prompts.
-5.  **Insecure Output Handling (XSS)**: Malicious payloads returned by the AI being rendered unescaped in the user's browser.
-6.  **Information Disclosure**: Exposure of stack traces or internal application versions via debug modes or verbose error endpoints.
+| Threat | Risk | Control |
+| --- | --- | --- |
+| Unauthorized API access | Attackers could read, export, change, or delete compliance records. | `/api/**` endpoints require JWT except login and Swagger documentation. |
+| Weak input validation | Invalid scores, statuses, or empty company names could corrupt reporting. | Bean Validation enforces required fields, score range, and approved statuses. |
+| Accidental destructive delete | Records could be permanently removed without traceability. | `DELETE /api/{id}` now performs a soft delete and audit logging records the action. |
+| CSV injection or malformed export | Commas, quotes, or line breaks could break exports. | CSV values are quoted and escaped before download. |
+| Unsafe file upload | Large or unexpected file types could be uploaded. | Upload endpoint validates file presence, `.csv` extension, MIME type, and 2 MB size limit. |
+| Secret exposure | Committed credentials could compromise local or deployed environments. | DB password and JWT secret are read from environment variables; no production secret is committed. |
+| Missing audit trail | Create/update/delete actions could lack accountability. | Spring AOP captures CUD operations and writes to `audit_log`. |
 
----
+## Findings And Fixes
 
-## 🧪 Security Testing Lifecycle
+| Finding | Fix |
+| --- | --- |
+| Hibernate was allowed to mutate schema directly. | Changed to validation mode; Flyway owns schema evolution. |
+| Audit table migration did not match the JPA entity. | Rebuilt `V2__audit_log.sql` with `entity_id`, `username`, `details`, and `timestamp`. |
+| Delete endpoint performed a hard delete. | Replaced with soft delete through the `deleted` column. |
+| Upload endpoint accepted any file. | Added CSV type, extension, empty file, and size validation. |
+| Static JWT secret existed in source. | Replaced with `JWT_SECRET` environment lookup and ephemeral generated fallback. |
+| Frontend auth state was scattered in `localStorage`. | Added `AuthContext` and kept `ProtectedRoute` behind context state. |
 
-| Phase | Focus | Tools Used | Result |
-| :--- | :--- | :--- | :--- |
-| **Day 5** | Input Validation & Sanitization | Manual Audit, Postman | **PASSED** - Fixed whitespace handling and output escaping. |
-| **Day 7** | Automated Vulnerability Scan | OWASP ZAP | **FIXED** - Patched critical security headers and disabled debug mode. |
-| **Day 9** | Security Sign-off (Auth & PII) | Manual Audit | **PASSED** - Verified JWT integrity and PII-free data flow. |
-| **Day 11** | E2E Container Security | Docker Compose | **PASSED** - Isolated service networks and verified secure env-var handling. |
+## Residual Risks
 
----
+| Risk | Notes |
+| --- | --- |
+| Demo credentials | Local fallback credentials are for development only; production must set `APP_USERNAME` and `APP_PASSWORD`. |
+| JWT revocation | Tokens expire naturally, but there is no server-side revocation list. |
+| CSV content trust | Uploaded CSV files are validated for type and size, but parsing/import workflows should validate every row before future persistence. |
+| AI service dependency | AI output depends on the external/local AI service quality and availability. |
 
-## 🛠️ Key Findings & Remediation
+## Required Environment Variables
 
-| Finding ID | Description | Severity | Remediation Action | Status |
-| :--- | :--- | :--- | :--- | :--- |
-| **SEC-01** | Missing HTTP Security Headers | Critical | Implemented `nosniff`, `DENY`, and `HSTS` headers. | **Fixed** |
-| **SEC-02** | Debug Mode Enabled | Critical | Configured `FLASK_DEBUG` to use environment variables (default False). | **Fixed** |
-| **SEC-03** | Prompt Injection | High | Implemented dual-layer defense: Regex filtering + Hardened System Prompts. | **Fixed** |
-| **SEC-04** | XSS via AI Output | High | Added regex-based HTML tag stripping on all AI-generated content. | **Fixed** |
-| **SEC-05** | API Key Exposure | Medium | Moved all secrets to `.env` files and secured them in `docker-compose`. | **Fixed** |
-| **SEC-06** | Detailed Error Traces | Medium | Implemented global error handlers to mask internal implementation details. | **Fixed** |
+| Variable | Purpose |
+| --- | --- |
+| `DB_URL` | PostgreSQL JDBC URL. |
+| `DB_USERNAME` | Database username. |
+| `DB_PASSWORD` | Database password. |
+| `JWT_SECRET` | HMAC signing key for JWT tokens. |
+| `APP_USERNAME` | Login username. |
+| `APP_PASSWORD` | Login password. |
+| `AI_SERVICE_URL` | Optional AI service base URL. |
 
----
+## Final Status
 
-## ⚠️ Residual Risks
-While the system is highly secure, the following residual risks are acknowledged:
-*   **Third-Party AI Dependency**: The security of the Groq API and the underlying Llama-3 model is managed externally. Any compromise of the provider could impact the service.
-*   **Adversarial Evolution**: As prompt injection techniques evolve, existing regex filters may require periodic updates to catch new linguistic patterns.
-*   **JWT Revocation**: Currently, tokens are valid until expiration. Future iterations should implement a blacklist for immediate token revocation if needed.
-
-## ✅ Day 13: Final Security Checklist & Sign-off
-
-### 📋 Pre-Deployment Security Checklist
-- [x] **Authentication**: All backend endpoints are secured via JWT.
-- [x] **Rate Limiting**: `Flask-Limiter` and backend constraints are active.
-- [x] **Prompt Integrity**: Dual-layer regex and system prompt defenses verified.
-- [x] **Data Privacy**: PII audit complete; no sensitive data sent to external AI providers.
-- [x] **Secret Management**: All API keys and JWT secrets managed via environment variables.
-- [x] **Infrastructure**: Container network isolation and health checks verified in `docker-compose`.
-- [x] **Code Quality**: No debug modes or verbose error traces exposed to production.
-
-### ✍️ Final Team Sign-off
-**Project Status:** **RELEASE READY** 🚀
-
-| Role | Name/Status | Date | Signature |
-| :--- | :--- | :--- | :--- |
-| **AI Developer 1** | Approved ✅ | 2026-05-03 | *Verified* |
-| **AI Developer 2** | Approved ✅ | 2026-05-03 | *Verified (Agent)* |
-| **Full Stack Developer** | Approved ✅ | 2026-05-03 | *Verified* |
-| **Security Lead** | Approved ✅ | 2026-05-03 | *Verified* |
-
-> [!IMPORTANT]
-> This document serves as the final security certification for the Sustainability Compliance Monitor (Tool-65). All team members have reviewed the findings and confirmed the remediation of all critical and high-priority risks.
+Security review is complete for Java Developer 2 responsibilities. Remaining operational checks should confirm the chosen deployment environment sets all required variables and that the Maven wrapper can run on a fresh machine.

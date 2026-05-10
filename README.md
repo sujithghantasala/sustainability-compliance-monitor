@@ -1,100 +1,39 @@
 # Sustainability Compliance Monitoring System
 
-## Overview
-
-A full-stack application to track, manage, and analyze company sustainability compliance records.
-Includes CRUD operations, search/filtering, JWT authentication, AI-based recommendations (mock), analytics dashboard, CSV export, and file upload.
-
----
+Full-stack application for tracking, searching, auditing, exporting, and analyzing company sustainability compliance records.
 
 ## Tech Stack
 
 ### Backend
 
-* Java (Spring Boot)
-* Spring Security (JWT)
-* Spring Data JPA
-* PostgreSQL
-* Swagger (OpenAPI)
+- Java 17
+- Spring Boot
+- Spring Security with JWT
+- Spring Data JPA
+- Flyway
+- PostgreSQL
+- Swagger/OpenAPI
 
 ### Frontend
 
-* React (Vite)
-* Axios
-* Tailwind CSS
+- React 18
+- Vite
+- Axios
+- Tailwind CSS
+- Recharts
 
----
+## Setup
 
-## Features
-
-### Core
-
-* Create, Read, Update, Delete compliance records
-* Search companies by name
-* Filter by compliance status
-
-### Security
-
-* JWT-based authentication
-* Protected API routes
-
-### AI (Mock)
-
-* Generates compliance recommendations based on company data
-
-### Analytics
-
-* Dashboard with compliance distribution (charts)
-
-### File Handling
-
-* Export records as CSV
-* Upload CSV file (validated)
-
-### API Documentation
-
-* Swagger UI for testing endpoints
-
----
-
-## Project Structure
-
-```
-backend/
-  src/main/java/com/internship/tool/
-    controller/
-    service/
-    repository/
-    config/
-
-frontend/
-  src/
-    pages/
-    components/
-    services/
-```
-
----
-
-## Setup Instructions
-
-### Backend
+1. Create environment variables from `.env.example`.
+2. Start PostgreSQL and create the configured database.
+3. Run the backend:
 
 ```bash
 cd backend
-mvn clean install
-mvn spring-boot:run
+cmd /c mvnw.cmd spring-boot:run
 ```
 
-Runs on:
-
-```
-http://localhost:8080
-```
-
----
-
-### Frontend
+4. Run the frontend:
 
 ```bash
 cd frontend
@@ -102,84 +41,48 @@ npm install
 npm run dev
 ```
 
-Runs on:
+Backend runs on `http://localhost:8080`.
+Frontend runs on `http://localhost:5173`.
 
-```
-http://localhost:5173
-```
+## API
 
----
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| `POST` | `/api/auth/login` | Login and receive JWT. |
+| `GET` | `/api/all` | List active records. |
+| `GET` | `/api/{id}` | Get active record by ID. |
+| `POST` | `/api/create` | Create record. |
+| `PUT` | `/api/{id}` | Update record. |
+| `DELETE` | `/api/{id}` | Soft delete record. |
+| `GET` | `/api/search?q=&status=&from=&to=` | Search and filter. |
+| `GET` | `/api/status/{status}` | Filter by status. |
+| `GET` | `/api/stats` | Dashboard statistics. |
+| `GET` | `/api/export` | Download CSV. |
+| `POST` | `/api/upload` | Validate CSV upload. |
+| `POST` | `/api/ai/describe` | AI summary. |
+| `POST` | `/api/ai/recommend` | AI recommendations. |
+| `POST` | `/api/ai/report` | AI report. |
 
-## API Endpoints
+Swagger UI: `http://localhost:8080/swagger-ui/index.html`
 
-| Method | Endpoint             | Description      |
-| ------ | -------------------- | ---------------- |
-| POST   | /api/auth/login      | Login (get JWT)  |
-| GET    | /api/all             | Get all records  |
-| GET    | /api/{id}            | Get record by ID |
-| POST   | /api/create          | Create record    |
-| PUT    | /api/{id}            | Update record    |
-| DELETE | /api/{id}            | Delete record    |
-| GET    | /api/search?q=       | Search           |
-| GET    | /api/status/{status} | Filter           |
-| POST   | /api/ai/recommend    | AI suggestions   |
-| GET    | /api/export          | Download CSV     |
-| POST   | /api/upload          | Upload CSV       |
+## Database
 
----
+Flyway migrations live in `backend/src/main/resources/db/migration`.
 
-## Authentication
+- `V1__init.sql`: core table, constraints, and indexes.
+- `V2__audit_log.sql`: audit table and indexes.
+- `V3__seed_30_compliance_records.sql`: 30 realistic seed records.
 
-1. Login:
-
-```json
-POST /api/auth/login
-{
-  "username": "admin",
-  "password": "admin"
-}
-```
-
-2. Use token:
-
-```
-Authorization: Bearer <token>
-```
-
----
-
-## Swagger
-
-```
-http://localhost:8080/swagger-ui/index.html
-```
-
----
+Hibernate is set to `ddl-auto=validate`; schema changes should go through Flyway only.
 
 ## Testing
 
 ```bash
-mvn test
+cd backend
+cmd /c mvnw.cmd test
+
+cd frontend
+npm run build
 ```
 
-Includes:
-
-* Controller tests (MockMvc)
-
----
-
-## Notes
-
-* AI feature is currently mocked
-* CSV upload validates file type and size
-* Token must be refreshed after backend restart
-
----
-
-## Status
-
-Project implementation complete (Day 12).
-Ready for demo and review.
-
----
-
+MockMvc covers create, read, update, soft delete, search, CSV export, upload validation, and error statuses.

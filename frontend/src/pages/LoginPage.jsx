@@ -1,33 +1,49 @@
 import { useState } from "react";
-import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../components/AuthContext";
+import API from "../services/api";
 
 function LoginPage() {
+  const navigate = useNavigate();
+  const { login } = useAuth();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = async () => {
+  const handleLogin = async (event) => {
+    event.preventDefault();
+    setError("");
+
+    if (!username.trim() || !password.trim()) {
+      setError("Username and password are required.");
+      return;
+    }
+
     try {
-      const res = await axios.post("http://localhost:8080/api/auth/login", {
+      setLoading(true);
+      const res = await API.post("/api/auth/login", {
         username: username.trim(),
         password: password.trim(),
       });
 
       if (!res.data.token) {
-        alert("No token received");
+        setError("No token received.");
         return;
       }
 
-      localStorage.setItem("token", res.data.token);
-      window.location.href = "/dashboard";
-    } catch (err) {
-      console.error("LOGIN ERROR:", err.response?.data || err);
-      alert("Login failed");
+      login(res.data.token);
+      navigate("/dashboard");
+    } catch {
+      setError("Login failed. Check your credentials.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="grid min-h-screen place-items-center bg-[#106EBE] px-4 py-10">
-      <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-2xl">
+    <main className="grid min-h-screen place-items-center bg-[#1B4F8A] px-4 py-10">
+      <form onSubmit={handleLogin} className="w-full max-w-md rounded-lg bg-white p-8 shadow-2xl">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-slate-950">Sign in</h1>
           <p className="mt-2 text-sm text-slate-600">
@@ -62,12 +78,14 @@ function LoginPage() {
             />
           </label>
 
-          <button onClick={handleLogin} className="btn-accent w-full">
-            Login
+          {error && <p className="text-sm font-semibold text-rose-700">{error}</p>}
+
+          <button type="submit" disabled={loading} className="btn-accent w-full">
+            {loading ? "Signing in..." : "Login"}
           </button>
         </div>
-      </div>
-    </div>
+      </form>
+    </main>
   );
 }
 

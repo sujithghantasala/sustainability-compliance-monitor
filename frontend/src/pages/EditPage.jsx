@@ -34,8 +34,8 @@ export default function EditPage() {
   };
 
   const handleUpdate = async () => {
-    if (!form.companyName || !form.status) {
-      alert("Company and status required");
+    if (!form.companyName || !form.status || form.complianceScore === "") {
+      alert("Company, score, and status required");
       return;
     }
 
@@ -52,9 +52,7 @@ export default function EditPage() {
     try {
       await API.put(`/api/${id}`, {
         ...form,
-        complianceScore: form.complianceScore
-          ? Number(form.complianceScore)
-          : null,
+        complianceScore: Number(form.complianceScore),
       });
 
       alert("Updated successfully");
@@ -115,6 +113,7 @@ export default function EditPage() {
             >
               <option value="">Select Status</option>
               <option value="COMPLIANT">Compliant</option>
+              <option value="PENDING_REVIEW">Pending Review</option>
               <option value="NON-COMPLIANT">Non-Compliant</option>
             </select>
           </label>

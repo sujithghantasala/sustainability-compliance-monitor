@@ -21,9 +21,9 @@ public class StatsController {
     @GetMapping("/stats")
     public Map<String, Object> getStats() {
 
-        long total = repository.count();
-        long compliant = repository.countByStatusIgnoreCase("compliant");
-        long nonCompliant = repository.countByStatusIgnoreCase("non-compliant");
+        long total = repository.countByDeletedFalse();
+        long compliant = repository.countByStatusIgnoreCaseAndDeletedFalse("compliant");
+        long nonCompliant = repository.countByStatusIgnoreCaseAndDeletedFalse("non-compliant");
 
         Double avgScore = repository.findAverageScore();
 

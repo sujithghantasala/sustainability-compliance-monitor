@@ -1,9 +1,14 @@
 package com.internship.tool.controller;
 
 import com.internship.tool.config.JwtUtil;
-import org.springframework.web.bind.annotation.*;
-
 import java.util.Map;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -12,16 +17,16 @@ public class AuthController {
 
     @PostMapping("/login")
     public Map<String, String> login(@RequestBody Map<String, String> request) {
-
         String username = request.get("username");
         String password = request.get("password");
 
-        // ✅ simple hardcoded login
-        if ("admin".equals(username) && "admin".equals(password)) {
-            String token = JwtUtil.generateToken(username);
-            return Map.of("token", token);
+        String expectedUsername = System.getenv().getOrDefault("APP_USERNAME", "admin");
+        String expectedPassword = System.getenv().getOrDefault("APP_PASSWORD", "admin");
+
+        if (expectedUsername.equals(username) && expectedPassword.equals(password)) {
+            return Map.of("token", JwtUtil.generateToken(username));
         }
 
-        throw new RuntimeException("Invalid credentials");
+        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
     }
 }
